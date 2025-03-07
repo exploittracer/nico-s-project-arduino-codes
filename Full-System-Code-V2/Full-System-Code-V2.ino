@@ -11,7 +11,7 @@ const int rainPin = A0; // the number of analog pin for Rain Sensor
 const int thresholdValue = 500; // the threshold value to detect rain
 
 // Push buttons configurations
-const int startButtonPin = 4;  // the number of the start button pin
+const int startButtonPin = 7;  // the number of the start button pin
 const int stopButtonPin = 8;  // the number of the stop button pin
 int startButtonState = 0;  // variable for reading the start hbutton status
 int stopButtonState = 0;  // variable for reading the stop button status
