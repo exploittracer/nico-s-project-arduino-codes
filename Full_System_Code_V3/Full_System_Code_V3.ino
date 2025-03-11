@@ -15,7 +15,7 @@ const int startButtonPin = 7;  // the number of the start button pin
 const int stopButtonPin = 8;  // the number of the stop button pin
 int startButtonState = 0;  // variable for reading the start hbutton status
 int stopButtonState = 0;  // variable for reading the stop button status
-
+int stopButtonCounter = 0;
 
 // Servo motor object
 Servo rainCoatServo, wiperServo; // servo motors for raincoat and wiper
@@ -46,11 +46,14 @@ void loop() {
   Serial.print(": ");
   Serial.print(stopButtonState);
   Serial.print(": ");
+  Serial.print(stopButtonCounter);
+  Serial.print(": ");
 
   switch (state) {
     case IDLE: {
       Serial.println("IDLE");
       // reset_motors();
+      stopButtonCounter = 0;
       if ((startButtonState == LOW) || (sensorValue < thresholdValue)) {
         // release_raincoat();
         state = RAINCOAT_RELEASE;
@@ -69,7 +72,12 @@ void loop() {
     case WIPER_ACTIVE: {
       Serial.println("WIPER-ACTIVATED");
       activate_wiper();
-      if ((stopButtonState == LOW) || (sensorValue >= thresholdValue)){
+      if (stopButtonState == LOW) {
+        stopButtonCounter = stopButtonCounter + 1;
+      }
+      
+      if (((stopButtonState == LOW) && (stopButtonCounter = 2)) || (sensorValue >= thresholdValue)) {
+        // stopButtonCounter = 0;
         deactivate_wiper();
         state = WIPER_INACTIVE;
       }
@@ -82,7 +90,7 @@ void loop() {
       if ((startButtonState == LOW) && (stopButtonState == LOW)) {
         reset_raincoat();
         state = RAINCOAT_RESET;
-      } else if (sensorValue < thresholdValue) {
+      } else if ((sensorValue < thresholdValue) && (stopButtonCounter == 0)) {
         state = WIPER_ACTIVE;
       }
       delay(100);
