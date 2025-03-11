@@ -1,9 +1,10 @@
 #include <Servo.h>
 
 // State Machine
-enum machineStates {IDLE, SENSOR_ACTIVE, SENSOR_INACTIVE, BUTTON_ACTIVE, BUTTON_INACTIVE};
+// enum machineStates {IDLE, SENSOR_ACTIVE, SENSOR_INACTIVE, BUTTON_ACTIVE, BUTTON_INACTIVE};
+enum machineStates {IDLE, RAINCOAT_RELEASE, WIPER_ACTIVE, WIPER_INACTIVE, RAINCOAT_RESET};
 machineStates state;
-String machineStatesArray[5] = {"IDLE", "SENSOR-ACTIVE", "SENSOR-INACTIVE", "BUTTON-ACTIVE", "BUTTON-INACTIVE"};
+// String machineStatesArray[5] = {"IDLE", "SENSOR-ACTIVE", "SENSOR-INACTIVE", "BUTTON-ACTIVE", "BUTTON-INACTIVE"};
 
 // Rain Sensor configurations
 const int rainPin = A0; // the number of analog pin for Rain Sensor
@@ -14,6 +15,7 @@ const int startButtonPin = 7;  // the number of the start button pin
 const int stopButtonPin = 8;  // the number of the stop button pin
 int startButtonState = 0;  // variable for reading the start hbutton status
 int stopButtonState = 0;  // variable for reading the stop button status
+
 
 // Servo motor object
 Servo rainCoatServo, wiperServo; // servo motors for raincoat and wiper
@@ -44,65 +46,70 @@ void loop() {
   Serial.print(": ");
   Serial.print(stopButtonState);
   Serial.print(": ");
-  Serial.println(machineStatesArray[state]);
 
   switch (state) {
     case IDLE: {
-      reset_motors();
-      if (startButtonState == LOW) {
-        release_rain_coat();
-        state = BUTTON_ACTIVE;
+      Serial.println("IDLE");
+      // reset_motors();
+      if ((startButtonState == LOW) || (sensorValue < thresholdValue)) {
+        // release_raincoat();
+        state = RAINCOAT_RELEASE;
       }
-      else if (sensorValue < thresholdValue) {
-        release_rain_coat();
-        state = SENSOR_ACTIVE;
-      }
+      delay(100);
     }
     break;
 
-    case BUTTON_ACTIVE: {
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW  
+    case RAINCOAT_RELEASE: {
+      Serial.println("RAINCOAT-RELEASED");
+      release_raincoat();
+      state = WIPER_ACTIVE;
+    }
+    break;
+
+    case WIPER_ACTIVE: {
+      Serial.println("WIPER-ACTIVATED");
       activate_wiper();
-      if (stopButtonState == LOW) {
-        reset_motors();
-        state = BUTTON_INACTIVE;
+      if ((stopButtonState == LOW) || (sensorValue >= thresholdValue)){
+        deactivate_wiper();
+        state = WIPER_INACTIVE;
       }
     }
     break;
 
-    case SENSOR_ACTIVE: {
-      digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)  
-      activate_wiper();
-      if (sensorValue >= thresholdValue) {
-        reset_motors();
-        state = SENSOR_INACTIVE;
+    case WIPER_INACTIVE: {
+      Serial.println("WIPER-DEACTIVATED");
+      // deactivate_wiper();
+      if ((startButtonState == LOW) && (stopButtonState == LOW)) {
+        reset_raincoat();
+        state = RAINCOAT_RESET;
+      } else if (sensorValue < thresholdValue) {
+        state = WIPER_ACTIVE;
       }
+      delay(100);
     }
     break;
 
-    case BUTTON_INACTIVE: {
-      delay(1000);
-      state = IDLE;
-    }
-    break;
-
-    case SENSOR_INACTIVE: {
-      delay(1000);
+    case RAINCOAT_RESET: {
+      Serial.println("RAINCOAT-RESETTED");
+      // reset_raincoat();
+      delay(500);
       state = IDLE;
     }
     break;
   }
+  // delay(500);
 }
 
 // initialize the motor angle position
 void reset_motors() {
-  rainCoatServo.write(0);
   wiperServo.write(0);
+  rainCoatServo.write(0);
   delay(500);
 }
 
-void release_rain_coat() {
+void release_raincoat() {
   rainCoatServo.write(180);
+  // delay(500);
 }
 
 void activate_wiper() {
@@ -112,6 +119,17 @@ void activate_wiper() {
   wiperServo.write(180);
   delay(500);
 }
+
+void deactivate_wiper() {
+  wiperServo.write(0);
+  delay(500);
+}
+
+void reset_raincoat() {
+  rainCoatServo.write(0);
+  delay(500);
+}
+
 
 void stop_button_interrupt() {
   Serial.println("Stop button interrupt activated");

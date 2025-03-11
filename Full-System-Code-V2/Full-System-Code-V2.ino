@@ -15,6 +15,7 @@ const int startButtonPin = 7;  // the number of the start button pin
 const int stopButtonPin = 8;  // the number of the stop button pin
 int startButtonState = 0;  // variable for reading the start hbutton status
 int stopButtonState = 0;  // variable for reading the stop button status
+bool isButtonActivated = false; // is activated by button or sensor
 
 // Servo motor object
 Servo rainCoatServo, wiperServo; // servo motors for raincoat and wiper
@@ -41,7 +42,12 @@ void loop() {
   int sensorValue = analogRead(rainPin);
   Serial.print(sensorValue);
   Serial.print(": ");
-  // Serial.println(machineStatesArray[state]);
+  Serial.print(startButtonState);
+  Serial.print(": ");
+  Serial.print(stopButtonState);
+  Serial.print(": ");
+  Serial.print(isButtonActivated);
+  Serial.print(": ");
 
   switch (state) {
     case IDLE: {
@@ -50,6 +56,11 @@ void loop() {
       if ((startButtonState == LOW) || (sensorValue < thresholdValue)) {
         release_raincoat();
         state = RAINCOAT_RELEASE;
+        if (startButtonState == LOW) {
+          isButtonActivated = true;
+        } else {
+          isButtonActivated = false;
+        }
       }
     }
     break;
@@ -75,6 +86,8 @@ void loop() {
       if ((startButtonState == LOW) && (stopButtonState == LOW)) {
         reset_raincoat();
         state = RAINCOAT_RESET;
+      } else if (sensorValue < thresholdValue) {
+        state = WIPER_ACTIVE;
       }
     }
     break;
@@ -86,12 +99,26 @@ void loop() {
     }
     break;
   }
+  // delay(500);
 }
 
 // initialize the motor angle position
 void reset_motors() {
   wiperServo.write(0);
   rainCoatServo.write(0);
+  delay(500);
+}
+
+void release_raincoat() {
+  rainCoatServo.write(180);
+  // delay(500);
+}
+
+void activate_wiper() {
+  wiperServo.write(0);
+  delay(500);
+
+  wiperServo.write(180);
   delay(500);
 }
 
@@ -105,19 +132,6 @@ void reset_raincoat() {
   delay(500);
 }
 
-
-void release_raincoat() {
-  rainCoatServo.write(180);
-  delay(500);
-}
-
-void activate_wiper() {
-  wiperServo.write(0);
-  delay(500);
-
-  wiperServo.write(180);
-  delay(500);
-}
 
 void stop_button_interrupt() {
   Serial.println("Stop button interrupt activated");
