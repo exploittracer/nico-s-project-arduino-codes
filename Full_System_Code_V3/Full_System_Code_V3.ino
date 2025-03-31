@@ -8,7 +8,8 @@ machineStates state;
 
 // Rain Sensor configurations
 const int rainPin = A0; // the number of analog pin for Rain Sensor
-const int thresholdValue = 500; // the threshold value to detect rain
+// const int thresholdValue = 500; // the threshold value to detect rain
+const int thresholdValue = 200; // the threshold value to detect rain
 
 // Push buttons configurations
 const int startButtonPin = 7;  // the number of the start button pin
