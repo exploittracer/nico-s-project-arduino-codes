@@ -69,6 +69,8 @@ void loop() {
       
       if (rainSensorValue < rainThresholdValue) {
         rainSensorValueDurationCounter = rainSensorValueDurationCounter + 1;
+      } else {
+        rainSensorValueDurationCounter = 0;
       }
 
       if ((rainSensorValue < rainThresholdValue) && (rainSensorValueDurationCounter == 50)) { // 50 == 5 sec
