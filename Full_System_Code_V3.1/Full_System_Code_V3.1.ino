@@ -141,10 +141,10 @@ void release_raincoat() {
 }
 
 void activate_wiper() {
-  wiperServo.write(0);
+  wiperServo.write(15);
   delay(500);
 
-  wiperServo.write(90);
+  wiperServo.write(125);
   delay(500);
 }
 
