@@ -144,7 +144,7 @@ void activate_wiper() {
   wiperServo.write(0);
   delay(500);
 
-  wiperServo.write(180);
+  wiperServo.write(90);
   delay(500);
 }
 
