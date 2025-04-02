@@ -8,7 +8,7 @@ machineStates state;
 
 // Rain Sensor configurations
 const int rainSensorPin = A0; // the number of analog pin for Rain Sensor
-const int rainThresholdValue = 250; // the threshold value to detect rain
+const int rainThresholdValue = 500; // the threshold value to detect rain
 int rainSensorValue = 0; // the variable to store rain sensor readings
 int rainSensorValueDurationCounter = 0; // count the duration of rainSensorValue is below rainThresholdValue
 
